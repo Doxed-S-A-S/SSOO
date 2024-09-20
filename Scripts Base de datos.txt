@@ -1,0 +1,75 @@
+SSH:
+ 
+ssh-keygen
+/ServerRoot/.shh/id_rsa
+passphrase: tG4kJ7pNhL
+ssh-copy-id RootOficina@192.168.2.20
+( y procedemos a guardar los datos ssh en el nuevo host para conexiones futuras y nos conectamos para continuar con los comandos)
+ssh RootOficina@192.168.2.20
+
+Creamos host para ansible:
+vi /etc/ansible/hosts
+	[Oficina]
+	192.168.1.1 
+	[Servidores]
+	192.168.1.20
+chgrp ServerAdmins hosts
+chmod 660 hosts
+
+
+
+
+
+
+Scripts:
+
+Backup script:
+
+vi DataBackup.sh
+	SoureLLData =”/LinguaLink/Data”
+	DestinoLLData=”/Respaldo/LinguaLink/Data”
+	echo “Realizando backup LL data $(date)” >> /Logs/LinguaLink/Data.Log
+	rsync -av  - -delete $SourceLLData $DestinoLLData >> /Logs/LinguaLink/Data.Log
+	echo “ ” >> /Logs/LinguaLink/Data.Log
+
+
+vi MasterDataBackup.sh
+	SourceMasterLLData=”/Respaldo/LinguaLink/Data””
+	DestinoMasterLLData=”/Respaldo/LinguaLing/MasterData”
+	echo “Realizando backup MAESTRO LL data $(date)” >> /Logs/LinguaLink/Data.Log
+	rsync -av - -delete $SourceMasterLLData $DestinoMasterLLData >>  /Logs/LinguaLink/Data.Log
+	echo “Fin BackupMaestro” >>  /Logs/LinguaLink/Data.Log
+
+
+
+
+
+Crontab y logrotate:
+
+crontab -e
+	10 20 * * * /ect/logrotate.conf
+	10 4 ⅓ * * /Scripts/LinguaLink/DataBackup.sh
+	10 5 1 ⅓ *  /Logs/LinguaLink/MasterDataBackup.sh
+
+
+Logrotate:
+
+vi /ect/logrotate.conf
+
+/LinugaLink/BackOffice/BackOffice.log{
+	daily
+	missingok
+	notifempty
+	rotate 5
+	delaycompress
+	create 660 BackOfficeAdmins
+	}
+
+
+/Logs/LinguaLink/Data.Log{
+	monthly
+	issingok
+	rotate 3
+	delay compress
+	create 660 LinguaLinkAdmins
+}
